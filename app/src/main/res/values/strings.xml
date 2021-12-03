@@ -3,6 +3,13 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+
+    <string name="title_run">Runs</string>
+    <string name="title_stat">Stats</string>
+    <string name="title_setting">Settings</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- TODO: Remove or change this placeholder text -->
     <string-array name="filter_options">
         <item>Date</item>
         <item>Running Time</item>

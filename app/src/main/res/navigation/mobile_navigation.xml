@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.pawan.sage.trackmyrun.ui.home.HomeFragment"
+        android:name="com.pawan.sage.trackmyrun.ui.fragments.StatsFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_stats" />
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="com.pawan.sage.trackmyrun.ui.dashboard.DashboardFragment"
+        android:name="com.pawan.sage.trackmyrun.ui.fragments.RunFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_run" />
 
     <fragment
         android:id="@+id/navigation_notifications"
-        android:name="com.pawan.sage.trackmyrun.ui.notifications.NotificationsFragment"
+        android:name="com.pawan.sage.trackmyrun.ui.fragments.SettingsFragment"
         android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_settings" />
 </navigation>
