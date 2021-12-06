@@ -2,34 +2,34 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/setupFragment">
+    app:startDestination="@id/navigation_setup">
 <!--to specify the transitions between existing fragments-->
     <fragment
-        android:id="@+id/runFragment"
+        android:id="@+id/navigation_run"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.RunFragment"
         android:label="RunFragment" >
         <action
             android:id="@+id/action_runFragment_to_trackingFragment"
-            app:destination="@id/trackingFragment" />
+            app:destination="@id/navigation_tracking" />
     </fragment>
     <fragment
-        android:id="@+id/setupFragment"
+        android:id="@+id/navigation_setup"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.SetupFragment"
         android:label="SetupFragment" >
         <action
             android:id="@+id/action_setupFragment_to_runFragment"
-            app:destination="@id/runFragment" />
+            app:destination="@id/navigation_run" />
     </fragment>
     <fragment
-        android:id="@+id/statsFragment"
+        android:id="@+id/navigation_stats"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.StatsFragment"
         android:label="StatsFragment" />
     <fragment
-        android:id="@+id/settingsFragment"
+        android:id="@+id/navigation_settings"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.SettingsFragment"
         android:label="SettingsFragment" />
     <fragment
-        android:id="@+id/trackingFragment"
+        android:id="@+id/navigation_tracking"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.TrackingFragment"
         android:label="TrackingFragment" >
         <action
