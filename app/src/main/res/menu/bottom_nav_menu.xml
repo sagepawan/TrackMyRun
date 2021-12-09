@@ -16,4 +16,15 @@
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/title_setting" />
 
+<!--    <item
+        android:id="@+id/setupFragment"
+        android:icon="@drawable/ic_notifications_black_24dp"
+        android:title="@string/title_setup" />
+
+    <item
+        android:id="@+id/trackingFragment"
+        android:icon="@drawable/ic_notifications_black_24dp"
+        android:title="@string/title_setup" />-->
+
+
 </menu>

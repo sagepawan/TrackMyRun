@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.pawan.sage.trackmyrun.R
 import com.pawan.sage.trackmyrun.databinding.FragmentRunBinding
 import com.pawan.sage.trackmyrun.ui.viewmodels.MainViewModel
@@ -28,7 +29,7 @@ class RunFragment : Fragment(R.layout.fragment_run) {
         binding = FragmentRunBinding.inflate(inflater, container, false)
 
         binding.fab.setOnClickListener{
-            Log.d("Fab Clicked"," ")
+            findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
         }
 
         return binding.root

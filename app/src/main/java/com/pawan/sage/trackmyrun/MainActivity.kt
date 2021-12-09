@@ -1,6 +1,8 @@
 package com.pawan.sage.trackmyrun
 
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -39,16 +41,29 @@ class MainActivity : AppCompatActivity() {
 
         val navController = findNavController(R.id.navHostFragment)
 
+        navView.setupWithNavController(navController)
+
+
+
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        val appBarConfiguration = AppBarConfiguration(
+        /*val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.runFragment, R.id.statsFragment, R.id.settingsFragment
             )
-        )
+        )*/
 
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+        /*navController.addOnDestinationChangedListener{ _, destination, _ ->
+            when(destination.id){
+                R.id.runFragment, R.id.statsFragment, R.id.settingsFragment -> navView.visibility = View.VISIBLE
+                else -> navView.visibility = View.GONE
+            }
+
+            Log.d(R.id.runFragment.toString()+" - ", destination.id.toString())
+        }*/
+
+        //setupActionBarWithNavController(navController, appBarConfiguration)
+        //navView.setupWithNavController(navController)
 
     }
 }
