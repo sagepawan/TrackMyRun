@@ -1,14 +1,8 @@
 package com.pawan.sage.trackmyrun.ui.fragments
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.google.android.gms.maps.GoogleMap
 import com.pawan.sage.trackmyrun.R
-import com.pawan.sage.trackmyrun.databinding.FragmentTrackingBinding
 import com.pawan.sage.trackmyrun.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
