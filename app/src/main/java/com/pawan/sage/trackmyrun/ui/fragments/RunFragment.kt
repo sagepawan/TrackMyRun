@@ -32,6 +32,10 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
 
     private lateinit var binding: FragmentRunBinding
 
+    private var isCoarseLocationPermissionGranted = false
+    private var isFineLocationPermissionGranted = false
+    private var isBackgroundLocationPermissionGranted = false
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,10 +44,9 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
         // Inflate the layout for this fragment
         binding = FragmentRunBinding.inflate(inflater, container, false)
 
-        binding.fab.setOnClickListener{
+        binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
         }
-
 
         requestPermissions()
 
@@ -52,52 +55,43 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
     }
 
     private fun requestPermissions() {
-        if(TrackingUtility.checkHasLocationPermissions(requireContext())){
+        if (TrackingUtility.checkHasLocationPermissions(requireContext())) {
             return
         }
 
-        requestPermissions.launch(arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        )
-
-        /*if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            EasyPermissions.requestPermissions(
-                this, "Location permissions need to be accepted to use this app",
-                REQ_CODE_LOCATION_PERMISSION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-        } else {
-            EasyPermissions.requestPermissions(
-                this, "Location permissions need to be accepted to use this app",
-                REQ_CODE_LOCATION_PERMISSION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
+        requestPermissions.launch(
+            arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION
             )
-        }*/
-
+        )
 
     }
+
 
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
 
     }
 
     override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
-        if(EasyPermissions.somePermissionPermanentlyDenied(this, perms)){
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
             AppSettingsDialog.Builder(this).build().show()
         } else {
             requestPermissions()
         }
     }
 
-    private val requestPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
-        granted -> Log.d("Permission Granted", granted.toString())
-    }
+    private val requestPermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
 
-
+            isCoarseLocationPermissionGranted =
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION]
+                    ?: isCoarseLocationPermissionGranted
+            isFineLocationPermissionGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION]
+                ?: isFineLocationPermissionGranted
+            isBackgroundLocationPermissionGranted = permissions[Manifest.permission.ACCESS_BACKGROUND_LOCATION]
+                ?: isBackgroundLocationPermissionGranted
+        }
 
 }
