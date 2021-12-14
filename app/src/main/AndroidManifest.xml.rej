@@ -1,0 +1,8 @@
+diff a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml	(rejected hunks)
+@@ -29,2 +29,6 @@
+ 
++        <!--For foreground location service setup-->
++        <service android:name=".service.TrackingService"
++            android:foregroundServiceType="location"/>
++
+         <meta-data

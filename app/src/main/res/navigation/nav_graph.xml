@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
     app:startDestination="@id/navigation_setup">
+
+    <!--Launching global action to open tracking fragment from notification-->
+    <action android:id="@+id/action_global_trackingFragment"
+        app:destination="@+id/navigation_tracking"
+        app:launchSingleTop="true"/>
+
 <!--to specify the transitions between existing fragments-->
     <fragment
         android:id="@+id/navigation_run"
