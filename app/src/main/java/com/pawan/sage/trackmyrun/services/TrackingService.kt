@@ -7,10 +7,13 @@ import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Context
 import android.content.Intent
+import android.location.Location
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.MutableLiveData
+import com.google.android.gms.maps.model.LatLng
 import com.pawan.sage.trackmyrun.MainActivity
 import com.pawan.sage.trackmyrun.R
 import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_PAUSE_SERVICE
@@ -22,9 +25,26 @@ import com.pawan.sage.trackmyrun.otherpackages.Constants.NOTIFICATION_CHANNEL_NA
 import com.pawan.sage.trackmyrun.otherpackages.Constants.NOTIFICATION_ID
 import timber.log.Timber
 
+typealias PolyLine = MutableList<LatLng>
+typealias PolyLines = MutableList<PolyLine>
+
 class TrackingService : LifecycleService() {
 
     var isFirstRun = true
+
+    companion object {
+        val isTracking = MutableLiveData<Boolean>()
+        //live data to hold tracked locations for specific runs
+        //list of coordinates used to draw lines, list of polylines
+        //val pathPoints = MutableLiveData<MutableList<MutableList<LatLng>>>()
+        val pathPoints = MutableLiveData<PolyLines>()
+    }
+
+    //to pull initial values into the livedata polyline object
+    private fun postInitialValues(){
+        isTracking.postValue(false)
+        pathPoints.postValue((mutableListOf()))
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
@@ -51,7 +71,28 @@ class TrackingService : LifecycleService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    //function to add coordinate to the last polyline at end of polyline list
+    private fun addPathCoordinate(location : Location?){
+        location?.let{
+            val position = LatLng(location.latitude, location.longitude)
+            //grab the last value in pathpoints and add new coordinate to it
+            pathPoints.value?.apply{
+                last().add(position)
+                pathPoints.postValue(this)
+            }
+        }
+    }
+
+    //function to add empty polyline at the end of polyline list
+    private fun addEmptyPolyline() = pathPoints.value?.apply {
+        add(mutableListOf())
+        pathPoints.postValue(this)
+    } ?: pathPoints.postValue(mutableListOf(mutableListOf()))
+
     private fun startForegroundService(){
+
+        addEmptyPolyline()
+
         //system service of android framework used for notification
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE)
                 as NotificationManager
