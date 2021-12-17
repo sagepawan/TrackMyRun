@@ -1,5 +1,6 @@
 package com.pawan.sage.trackmyrun.service
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_LOW
@@ -9,10 +10,17 @@ import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.os.Build
+import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.maps.model.LatLng
 import com.pawan.sage.trackmyrun.MainActivity
 import com.pawan.sage.trackmyrun.R
@@ -20,9 +28,12 @@ import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_PAUSE_SERVICE
 import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_SHOW_TRACKING_FRAGMENT
 import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_START_RESUME_SERVICE
 import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_STOP_SERVICE
+import com.pawan.sage.trackmyrun.otherpackages.Constants.LOCATION_UPDATE_FASTEST_INTERVAL
+import com.pawan.sage.trackmyrun.otherpackages.Constants.LOCATION_UPDATE_INTERVAL
 import com.pawan.sage.trackmyrun.otherpackages.Constants.NOTIFICATION_CHANNEL_ID
 import com.pawan.sage.trackmyrun.otherpackages.Constants.NOTIFICATION_CHANNEL_NAME
 import com.pawan.sage.trackmyrun.otherpackages.Constants.NOTIFICATION_ID
+import com.pawan.sage.trackmyrun.otherpackages.TrackingUtility
 import timber.log.Timber
 
 typealias PolyLine = MutableList<LatLng>
@@ -31,6 +42,8 @@ typealias PolyLines = MutableList<PolyLine>
 class TrackingService : LifecycleService() {
 
     var isFirstRun = true
+
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     companion object {
         val isTracking = MutableLiveData<Boolean>()
@@ -44,6 +57,16 @@ class TrackingService : LifecycleService() {
     private fun postInitialValues(){
         isTracking.postValue(false)
         pathPoints.postValue((mutableListOf()))
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        postInitialValues()
+        fusedLocationProviderClient = FusedLocationProviderClient(this)
+
+        isTracking.observe(this, Observer{
+            updateLocationTracking(it)
+        })
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -82,6 +105,41 @@ class TrackingService : LifecycleService() {
             }
         }
     }
+    
+    //define location callback using FusedLocationProviderClient, this will grab new location updates
+    val locationCallback = object : LocationCallback(){
+        override fun onLocationResult(locationResult: LocationResult) {
+            super.onLocationResult(locationResult)
+            if(isTracking.value!!) {
+                locationResult?.locations?.let { locations ->
+                    for(location in locations){
+                        addPathCoordinate(location)
+                        Timber.d("NEW LOCATION: ${location.latitude}, ${location.longitude}")
+                    }
+                }
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun updateLocationTracking(isTracking: Boolean){
+        if(isTracking){
+            if(TrackingUtility.checkHasLocationPermissions(this)){
+                val request = LocationRequest.create().apply {
+                    interval = LOCATION_UPDATE_INTERVAL
+                    fastestInterval = LOCATION_UPDATE_FASTEST_INTERVAL
+                    priority = PRIORITY_HIGH_ACCURACY
+                }
+                fusedLocationProviderClient.requestLocationUpdates(
+                    request,
+                    locationCallback,
+                    Looper.getMainLooper()
+                )
+            }
+        } else {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        }
+    }
 
     //function to add empty polyline at the end of polyline list
     private fun addEmptyPolyline() = pathPoints.value?.apply {
@@ -92,6 +150,8 @@ class TrackingService : LifecycleService() {
     private fun startForegroundService(){
 
         addEmptyPolyline()
+
+        isTracking.postValue(true)
 
         //system service of android framework used for notification
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE)
