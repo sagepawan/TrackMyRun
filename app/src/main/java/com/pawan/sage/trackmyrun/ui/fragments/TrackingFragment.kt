@@ -1,16 +1,26 @@
 package com.pawan.sage.trackmyrun.ui.fragments
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.PolylineOptions
 import com.pawan.sage.trackmyrun.R
 import com.pawan.sage.trackmyrun.databinding.FragmentTrackingBinding
+import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_PAUSE_SERVICE
 import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_START_RESUME_SERVICE
+import com.pawan.sage.trackmyrun.otherpackages.Constants.MAP_ZOOM
+import com.pawan.sage.trackmyrun.otherpackages.Constants.POLYLINE_WIDTH
+import com.pawan.sage.trackmyrun.service.PolyLine
 import com.pawan.sage.trackmyrun.service.TrackingService
 import com.pawan.sage.trackmyrun.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,6 +35,12 @@ class TrackingFragment : Fragment() {
 
     private var map: GoogleMap ?= null //base map object
 
+    private var isTracking = false
+    private var pathPoints = mutableListOf<PolyLine>()
+
+    lateinit var btnToggleRun: Button
+    lateinit var btnFinishRun: Button
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -37,13 +53,90 @@ class TrackingFragment : Fragment() {
 
         binding.mapView.getMapAsync{
             map = it
+            addAllPolylines()
         }
 
-        binding.btnToggleRun.setOnClickListener{
-            sendCommandToService(ACTION_START_RESUME_SERVICE)
+        btnToggleRun = binding.btnToggleRun
+        btnFinishRun = binding.btnFinishRun
+
+        btnToggleRun.setOnClickListener{
+            toggleRun()
         }
+
+        subscribeToObservers()
 
         return binding.root
+    }
+
+    //to maintain polyline when state is changed, using livedata
+     private fun addAllPolylines(){
+         for(polyline in pathPoints){
+             val polylineOptions = PolylineOptions()
+                 .color(Color.RED)
+                 .width(POLYLINE_WIDTH)
+                 .addAll(polyline)
+             map?.addPolyline(polylineOptions)
+         }
+     }
+
+    //function to take camera to user's latest position on new location update in polyline list
+    private fun panCameraOnUserPosition(){
+        if(pathPoints.isNotEmpty()&&pathPoints.last().isNotEmpty()){
+            map?.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                    pathPoints.last().last(),
+                    MAP_ZOOM
+                )
+            )
+        }
+    }
+
+    //fun to subscribe to live data objects
+    private fun subscribeToObservers(){
+        TrackingService.isTracking.observe(viewLifecycleOwner, Observer {
+            updateTracking(it)
+        })
+
+        TrackingService.pathPoints.observe(viewLifecycleOwner, Observer{
+            pathPoints = it
+            addLastPolyline()
+            panCameraOnUserPosition()
+        })
+    }
+
+    private fun toggleRun(){
+        if(isTracking){
+            sendCommandToService(ACTION_PAUSE_SERVICE)
+        } else {
+            sendCommandToService(ACTION_START_RESUME_SERVICE)
+        }
+    }
+
+    //fun to observe data from servers (local db) and react to those changes
+    private fun updateTracking(isTracking: Boolean){
+        this.isTracking = isTracking
+        if(!isTracking){
+            btnToggleRun.text = "Start"
+            btnFinishRun.visibility = View.VISIBLE
+        } else {
+            btnToggleRun.text = "Stop"
+            btnFinishRun.visibility = View.GONE
+        }
+    }
+
+    //function to draw polyline
+    //Idea is to connect last two coordinates for each new location update
+    private fun addLastPolyline(){
+        if(pathPoints.isNotEmpty()&&pathPoints.last().size>1){
+            val preLastCoord = pathPoints.last()[pathPoints.last().size-2]  //second last point
+            val lastCoord = pathPoints.last().last()  //last point
+            val polylineOptions = PolylineOptions()
+                .color(Color.RED)
+                .width(POLYLINE_WIDTH)
+                .add(preLastCoord)
+                .add(lastCoord)
+            map?.addPolyline(polylineOptions)
+        }
     }
 
     //to communicate with service

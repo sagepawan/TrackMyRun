@@ -1,5 +1,7 @@
 package com.pawan.sage.trackmyrun.otherpackages
 
+import androidx.compose.ui.graphics.Color
+
 object Constants {
 
     const val RUN_DATABASE_VALUE = "run_db"
@@ -13,6 +15,9 @@ object Constants {
     const val LOCATION_UPDATE_INTERVAL = 4500L
     const val LOCATION_UPDATE_FASTEST_INTERVAL = 2000L
 
+    //const val POLYLINE_COLOR = Color.RED
+    const val POLYLINE_WIDTH = 7f
+    const val MAP_ZOOM = 14f
 
     const val NOTIFICATION_CHANNEL_ID = "tracking_channel"
     const val NOTIFICATION_CHANNEL_NAME = "TRACKING"
