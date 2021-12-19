@@ -20,6 +20,7 @@ import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_PAUSE_SERVICE
 import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_START_RESUME_SERVICE
 import com.pawan.sage.trackmyrun.otherpackages.Constants.MAP_ZOOM
 import com.pawan.sage.trackmyrun.otherpackages.Constants.POLYLINE_WIDTH
+import com.pawan.sage.trackmyrun.otherpackages.TrackingUtility
 import com.pawan.sage.trackmyrun.service.PolyLine
 import com.pawan.sage.trackmyrun.service.TrackingService
 import com.pawan.sage.trackmyrun.ui.viewmodels.MainViewModel
@@ -40,6 +41,8 @@ class TrackingFragment : Fragment() {
 
     lateinit var btnToggleRun: Button
     lateinit var btnFinishRun: Button
+
+    private var currentTimeInMillis = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -101,6 +104,12 @@ class TrackingFragment : Fragment() {
             pathPoints = it
             addLastPolyline()
             panCameraOnUserPosition()
+        })
+
+        TrackingService.timeRunInMillis.observe(viewLifecycleOwner, Observer {
+            currentTimeInMillis = it
+            val formattedTime = TrackingUtility.getStopWatchTimeInFormat(currentTimeInMillis, true)
+            binding.tvTimer.text = formattedTime
         })
     }
 

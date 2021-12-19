@@ -33,7 +33,12 @@ import com.pawan.sage.trackmyrun.otherpackages.Constants.LOCATION_UPDATE_INTERVA
 import com.pawan.sage.trackmyrun.otherpackages.Constants.NOTIFICATION_CHANNEL_ID
 import com.pawan.sage.trackmyrun.otherpackages.Constants.NOTIFICATION_CHANNEL_NAME
 import com.pawan.sage.trackmyrun.otherpackages.Constants.NOTIFICATION_ID
+import com.pawan.sage.trackmyrun.otherpackages.Constants.TIMER_UPDATE_INTERVAL
 import com.pawan.sage.trackmyrun.otherpackages.TrackingUtility
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 typealias PolyLine = MutableList<LatLng>
@@ -45,7 +50,13 @@ class TrackingService : LifecycleService() {
 
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
+    //live data for running time for user in seconds
+    private val timeRunInSeconds = MutableLiveData<Long>()
+
     companion object {
+
+        val timeRunInMillis = MutableLiveData<Long>()
+
         val isTracking = MutableLiveData<Boolean>()
         //live data to hold tracked locations for specific runs
         //list of coordinates used to draw lines, list of polylines
@@ -57,6 +68,8 @@ class TrackingService : LifecycleService() {
     private fun postInitialValues(){
         isTracking.postValue(false)
         pathPoints.postValue((mutableListOf()))
+        timeRunInSeconds.postValue(0L)
+        timeRunInMillis.postValue(0L)
     }
 
     override fun onCreate() {
@@ -79,7 +92,7 @@ class TrackingService : LifecycleService() {
                         isFirstRun = false
                     } else {
                         Timber.d("Service resumed")
-                        startForegroundService()
+                        startTimer()
                     }
                 }
 
@@ -125,6 +138,40 @@ class TrackingService : LifecycleService() {
 
     private fun pauseService(){
         isTracking.postValue(false)
+        isTimerEnabled = false
+    }
+
+    private var isTimerEnabled = false
+    private var lapTime = 0L //current ongoing lap time
+    private var totalTimeRun = 0L //summation of all lap times
+    private var timeStarted = 0L
+    private var lastSecondTimeStamp = 0L
+
+    //fun to track time and trigger observers for livedata
+    private fun startTimer(){
+        addEmptyPolyline()
+        isTracking.postValue(true)
+        timeStarted = System.currentTimeMillis()
+        isTimerEnabled = true
+
+        //use of coroutines to track/stop current time
+        //this avoids calling observers constantly which will be heavy on system resources
+
+        CoroutineScope(Dispatchers.Main).launch {
+            while (isTracking.value!!){
+                //current time to the time started difference
+                lapTime = System.currentTimeMillis() - timeStarted
+                //posting new lap time
+                timeRunInMillis.postValue(totalTimeRun+lapTime)
+
+                if(timeRunInMillis.value!! >= lastSecondTimeStamp + 1000L) {
+                    timeRunInSeconds.postValue(timeRunInSeconds.value!! + 1)
+                    lastSecondTimeStamp += 1000L
+                }
+                delay(TIMER_UPDATE_INTERVAL)
+            }
+            totalTimeRun += lapTime
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -155,7 +202,7 @@ class TrackingService : LifecycleService() {
 
     private fun startForegroundService(){
 
-        addEmptyPolyline()
+        startTimer()
 
         isTracking.postValue(true)
 
