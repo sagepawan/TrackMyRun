@@ -92,9 +92,11 @@ class TrackingService : LifecycleService() {
 
         isTracking.observe(this, Observer{
             updateLocationTracking(it)
+            updateNotificationTrackingState(it)
         })
     }
 
+    //to toggle between notification state for pause and resume
     private fun updateNotificationTrackingState(isTracking: Boolean){
         val notificationActionText = if(isTracking) "Pause" else "Resume"
         val pendingIntent = if(isTracking) {
@@ -110,6 +112,18 @@ class TrackingService : LifecycleService() {
         }
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        //to ensure only pause/resume action are shown as action
+        currentNotificationBuilder.javaClass.getDeclaredField("mActions").apply {
+            isAccessible = true
+
+            //assign action value to empty list
+            set(currentNotificationBuilder, ArrayList<NotificationCompat.Action>())
+        }
+
+        currentNotificationBuilder = baseNotificationBuilder
+            .addAction(R.drawable.ic_drawable_black_pause, notificationActionText, pendingIntent)
+        notificationManager.notify(NOTIFICATION_ID, currentNotificationBuilder.build())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -219,7 +233,7 @@ class TrackingService : LifecycleService() {
                     Looper.getMainLooper()
                 )
             }
-        } else {
+        } else { 
             fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         }
     }
@@ -246,6 +260,12 @@ class TrackingService : LifecycleService() {
 
         //start foreground service
         startForeground(NOTIFICATION_ID, baseNotificationBuilder.build())
+
+        timeRunInSeconds.observe(this, Observer {
+            val notification = currentNotificationBuilder
+                .setContentText(TrackingUtility.getStopWatchTimeInFormat(it * 1000L))
+            notificationManager.notify(NOTIFICATION_ID, notification.build())
+        })
     }
 
     //to setup flow to tracking fragment when notification is clicked
