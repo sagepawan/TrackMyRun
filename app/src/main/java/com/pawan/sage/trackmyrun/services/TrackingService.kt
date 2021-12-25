@@ -51,6 +51,7 @@ typealias PolyLines = MutableList<PolyLine>
 class TrackingService : LifecycleService() {
 
     var isFirstRun = true
+    var isServiceKilled = false
 
     @Inject
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -121,9 +122,15 @@ class TrackingService : LifecycleService() {
             set(currentNotificationBuilder, ArrayList<NotificationCompat.Action>())
         }
 
-        currentNotificationBuilder = baseNotificationBuilder
-            .addAction(R.drawable.ic_drawable_black_pause, notificationActionText, pendingIntent)
-        notificationManager.notify(NOTIFICATION_ID, currentNotificationBuilder.build())
+        if(!isServiceKilled) {
+            currentNotificationBuilder = baseNotificationBuilder
+                .addAction(
+                    R.drawable.ic_drawable_black_pause,
+                    notificationActionText,
+                    pendingIntent
+                )
+            notificationManager.notify(NOTIFICATION_ID, currentNotificationBuilder.build())
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -147,10 +154,21 @@ class TrackingService : LifecycleService() {
 
                 ACTION_STOP_SERVICE -> {
                     Timber.d("Service stopped")
+                    killService()
                 }
             }
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    //function to stop/kill service
+    private fun killService(){
+        isServiceKilled = true
+        isFirstRun = true
+        pauseService()
+        postInitialValues()  //to reset all live data values
+        stopForeground(true)  //remove foreground service notification
+        stopSelf()
     }
 
     //function to add coordinate to the last polyline at end of polyline list
@@ -233,7 +251,7 @@ class TrackingService : LifecycleService() {
                     Looper.getMainLooper()
                 )
             }
-        } else { 
+        } else {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         }
     }
@@ -262,9 +280,11 @@ class TrackingService : LifecycleService() {
         startForeground(NOTIFICATION_ID, baseNotificationBuilder.build())
 
         timeRunInSeconds.observe(this, Observer {
-            val notification = currentNotificationBuilder
-                .setContentText(TrackingUtility.getStopWatchTimeInFormat(it * 1000L))
-            notificationManager.notify(NOTIFICATION_ID, notification.build())
+            if(!isServiceKilled) {
+                val notification = currentNotificationBuilder
+                    .setContentText(TrackingUtility.getStopWatchTimeInFormat(it * 1000L))
+                notificationManager.notify(NOTIFICATION_ID, notification.build())
+            }
         })
     }
 
