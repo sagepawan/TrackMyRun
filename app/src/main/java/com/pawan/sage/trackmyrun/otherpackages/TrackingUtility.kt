@@ -1,7 +1,9 @@
 package com.pawan.sage.trackmyrun.otherpackages
 
 import android.content.Context
+import android.location.Location
 import android.os.Build
+import com.pawan.sage.trackmyrun.service.PolyLine
 import pub.devrel.easypermissions.EasyPermissions
 import java.util.concurrent.TimeUnit
 
@@ -41,5 +43,29 @@ object TrackingUtility {
                 "${if (seconds < 10) "0" else ""}$seconds:" +
                 if (includeMillis) "${if (milliseconds < 10) "0" else ""}$milliseconds" else ""
 
+    }
+
+    fun calculatePolylineLength(polyline: PolyLine): Float{
+        var distance = 0f
+        //loop leading upto size-2 since the highest index will be at i+1
+        for(i in 0..polyline.size-2){
+            val position1 = polyline[i]
+            val position2 = polyline[i+1]
+
+            val result = FloatArray(1)
+
+            Location.distanceBetween(
+                position1.latitude,
+                position1.longitude,
+                position2.latitude,
+                position2.longitude,
+                result
+            )
+
+            distance += result[0]
+
+        }
+
+        return  distance
     }
 }

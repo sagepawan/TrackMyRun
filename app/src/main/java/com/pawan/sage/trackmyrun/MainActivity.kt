@@ -27,9 +27,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        navigateToTrackingFragmentWhenRequired(intent)
+        //need to be defined else menu inflater override won't be called in child fragments
+        setSupportActionBar(binding.toolbar)
 
-        //setSupportActionBar(binding.toolbar)
+        navigateToTrackingFragmentWhenRequired(intent)
 
        // val navController = findNavController(R.id.navHostFragment)
 

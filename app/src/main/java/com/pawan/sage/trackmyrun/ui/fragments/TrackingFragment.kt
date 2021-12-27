@@ -3,6 +3,7 @@ package com.pawan.sage.trackmyrun.ui.fragments
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Button
 import androidx.compose.ui.graphics.Color.Companion.Red
@@ -10,12 +11,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pawan.sage.trackmyrun.R
 import com.pawan.sage.trackmyrun.databinding.FragmentTrackingBinding
+import com.pawan.sage.trackmyrun.db.Run
 import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_PAUSE_SERVICE
 import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_START_RESUME_SERVICE
 import com.pawan.sage.trackmyrun.otherpackages.Constants.ACTION_STOP_SERVICE
@@ -26,6 +30,8 @@ import com.pawan.sage.trackmyrun.service.PolyLine
 import com.pawan.sage.trackmyrun.service.TrackingService
 import com.pawan.sage.trackmyrun.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
+import kotlin.math.round
 
 @AndroidEntryPoint
 class TrackingFragment : Fragment() {
@@ -47,13 +53,13 @@ class TrackingFragment : Fragment() {
 
     private var menu: Menu? = null
 
+    private var weight = 80f
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        setHasOptionsMenu(true)
 
         binding = FragmentTrackingBinding.inflate(inflater, container, false)
 
@@ -73,7 +79,14 @@ class TrackingFragment : Fragment() {
 
         subscribeToObservers()
 
+
         return binding.root
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d("menuInflater onCreate", menu.toString())
+        setHasOptionsMenu(true)
     }
 
     //to maintain polyline when state is changed, using livedata
@@ -100,10 +113,10 @@ class TrackingFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
+        Log.d("menuInflater called", menu.toString())
         inflater.inflate(R.menu.toolbar_tracking_menu, menu)
         this.menu = menu
+        //super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -240,6 +253,49 @@ class TrackingFragment : Fragment() {
         super.onSaveInstanceState(outState)
 
         binding.mapView?.onSaveInstanceState(outState)
+    }
+
+    //function that allows us to zoom out in the map such that all polylines are included within a single screen
+    private fun zoomOutEntireRunningTrack() {
+        //define latlng bounds
+        val bounds = LatLngBounds.Builder()
+        for(polyline in pathPoints){
+            for(position in polyline){
+                bounds.include(position)
+            }
+        }
+
+        map?.moveCamera(
+            CameraUpdateFactory.newLatLngBounds(
+                bounds.build(),
+                binding.mapView.width,
+                binding.mapView.height,
+                (binding.mapView.height * 0.05f).toInt()
+            )
+        )
+    }
+
+    //finish run and save run image to local db once screen zooms to entire run in mapview
+    private fun finishRunAndSaveToLocalDb() {
+        map?.snapshot { bitmap ->
+            var distanceInMeters = 0
+
+            for(polyline in pathPoints){
+                distanceInMeters += TrackingUtility.calculatePolylineLength(polyline).toInt()
+            }
+
+            val averageSpeedInKMS = round((distanceInMeters / 1000f)/(currentTimeInMillis/1000f/60/60)*10)/10f
+            val dateTimestamp = Calendar.getInstance().timeInMillis
+            val caloriesBurned = ((distanceInMeters/1000f)*weight).toInt()
+
+            val run = Run(
+                bitmap,
+                dateTimestamp,
+                averageSpeedInKMS,
+                distanceInMeters,
+                currentTimeInMillis,
+                caloriesBurned)
+        }
     }
 
 }
