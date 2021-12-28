@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -17,6 +18,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.pawan.sage.trackmyrun.R
 import com.pawan.sage.trackmyrun.databinding.FragmentTrackingBinding
 import com.pawan.sage.trackmyrun.db.Run
@@ -75,6 +77,11 @@ class TrackingFragment : Fragment() {
 
         btnToggleRun.setOnClickListener{
             toggleRun()
+        }
+
+        btnFinishRun.setOnClickListener{
+            zoomOutEntireRunningTrack()
+            finishRunAndSaveToLocalDb()
         }
 
         subscribeToObservers()
@@ -259,20 +266,26 @@ class TrackingFragment : Fragment() {
     private fun zoomOutEntireRunningTrack() {
         //define latlng bounds
         val bounds = LatLngBounds.Builder()
+        var counter = 0
         for(polyline in pathPoints){
             for(position in polyline){
+                counter++
                 bounds.include(position)
             }
         }
+        Log.d("counterValue is ", counter.toString())
 
-        map?.moveCamera(
-            CameraUpdateFactory.newLatLngBounds(
-                bounds.build(),
-                binding.mapView.width,
-                binding.mapView.height,
-                (binding.mapView.height * 0.05f).toInt()
+        if(counter>0) {
+            map?.moveCamera(
+                CameraUpdateFactory.newLatLngBounds(
+                    bounds.build(),
+                    binding.mapView.width,
+                    binding.mapView.height,
+                    (binding.mapView.height * 0.05f).toInt()
+                )
             )
-        )
+
+        }
     }
 
     //finish run and save run image to local db once screen zooms to entire run in mapview
@@ -295,6 +308,17 @@ class TrackingFragment : Fragment() {
                 distanceInMeters,
                 currentTimeInMillis,
                 caloriesBurned)
+
+            viewModel.insertRun(run)
+
+            Snackbar.make(
+                //since we are navigating back to run fragment at this point
+                requireActivity().findViewById(R.id.rootView) ,
+                "Run saved successfully!",
+                Snackbar.LENGTH_LONG
+            ).show()
+
+            finishRun()
         }
     }
 
