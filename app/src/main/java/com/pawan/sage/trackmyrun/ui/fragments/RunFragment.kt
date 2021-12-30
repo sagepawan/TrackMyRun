@@ -15,7 +15,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.pawan.sage.trackmyrun.R
+import com.pawan.sage.trackmyrun.adapters.RunAdapter
 import com.pawan.sage.trackmyrun.databinding.FragmentRunBinding
 import com.pawan.sage.trackmyrun.otherpackages.Constants.REQ_CODE_LOCATION_PERMISSION
 import com.pawan.sage.trackmyrun.otherpackages.TrackingUtility
@@ -23,12 +25,15 @@ import com.pawan.sage.trackmyrun.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
+import java.util.*
 
 @AndroidEntryPoint
 class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionCallbacks {
 
     //to inject viewModel from dagger here
     private val viewModel: MainViewModel by viewModels()
+
+    private lateinit var runAdapter: RunAdapter
 
     private lateinit var binding: FragmentRunBinding
 
@@ -49,9 +54,20 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
         }
 
         requestPermissions()
+        setupRecyclerView()
+
+        viewModel.runsSortedbyDate.observe(viewLifecycleOwner, androidx.lifecycle.Observer{
+            runAdapter.submitList(it)
+        })
 
         return binding.root
 
+    }
+
+    private fun setupRecyclerView() = binding.rvRuns.apply {
+        runAdapter = RunAdapter()
+        adapter = runAdapter
+        layoutManager = LinearLayoutManager(requireContext())
     }
 
     private fun requestPermissions() {
