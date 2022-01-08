@@ -1,5 +1,6 @@
 package com.pawan.sage.trackmyrun.ui.fragments
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.github.mikephil.charting.components.XAxis
 import com.pawan.sage.trackmyrun.R
 import com.pawan.sage.trackmyrun.databinding.FragmentStatsBinding
 import com.pawan.sage.trackmyrun.otherpackages.TrackingUtility
@@ -30,6 +32,36 @@ class StatsFragment : Fragment() {
         binding = FragmentStatsBinding.inflate(inflater, container, false)
         subscribeToObservers()
         return binding.root
+    }
+
+    private fun setupBarChart(){
+        binding.barChart.xAxis.apply {
+            position = XAxis.XAxisPosition.BOTTOM
+
+            //to click on bar and display details on click
+            setDrawLabels(false)
+
+            axisLineColor = Color.WHITE
+            textColor = Color.WHITE
+            setDrawGridLines(false)
+        }
+
+        binding.barChart.axisLeft.apply {
+            axisLineColor = Color.WHITE
+            textColor = Color.WHITE
+            setDrawGridLines(false)
+        }
+
+        binding.barChart.axisRight.apply {
+            axisLineColor = Color.WHITE
+            textColor = Color.WHITE
+            setDrawGridLines(false)
+        }
+
+        binding.barChart.apply {
+            description.text = "Average Speed Over Time"
+            legend.isEnabled = false
+        }
     }
 
     private fun subscribeToObservers() {

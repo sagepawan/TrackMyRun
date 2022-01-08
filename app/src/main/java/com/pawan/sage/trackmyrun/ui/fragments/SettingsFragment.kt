@@ -47,8 +47,6 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
     ): View? {
         binding = FragmentSettingsBinding.inflate(inflater, container, false)
 
-
-
         return binding.root
     }
 
