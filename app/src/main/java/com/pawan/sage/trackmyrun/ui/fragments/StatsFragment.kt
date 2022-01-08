@@ -5,10 +5,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
 import com.pawan.sage.trackmyrun.R
 import com.pawan.sage.trackmyrun.databinding.FragmentStatsBinding
 import com.pawan.sage.trackmyrun.otherpackages.TrackingUtility
@@ -22,6 +27,7 @@ class StatsFragment : Fragment() {
     //to inject viewModel from dagger here
     private val viewModel: StatViewModel by viewModels()
     lateinit var binding: FragmentStatsBinding
+    lateinit var barChart: BarChart
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,11 +37,12 @@ class StatsFragment : Fragment() {
         //binding = FragmentSettingsBinding.inflate(inflater, container, false)
         binding = FragmentStatsBinding.inflate(inflater, container, false)
         subscribeToObservers()
+        barChart = binding.barChart
         return binding.root
     }
 
     private fun setupBarChart(){
-        binding.barChart.xAxis.apply {
+        barChart.xAxis.apply {
             position = XAxis.XAxisPosition.BOTTOM
 
             //to click on bar and display details on click
@@ -46,19 +53,19 @@ class StatsFragment : Fragment() {
             setDrawGridLines(false)
         }
 
-        binding.barChart.axisLeft.apply {
+        barChart.axisLeft.apply {
             axisLineColor = Color.WHITE
             textColor = Color.WHITE
             setDrawGridLines(false)
         }
 
-        binding.barChart.axisRight.apply {
+        barChart.axisRight.apply {
             axisLineColor = Color.WHITE
             textColor = Color.WHITE
             setDrawGridLines(false)
         }
 
-        binding.barChart.apply {
+        barChart.apply {
             description.text = "Average Speed Over Time"
             legend.isEnabled = false
         }
@@ -96,6 +103,25 @@ class StatsFragment : Fragment() {
             it?.let{
                 val caloriesTotal = "${it}Kcal"
                 binding.tvTotalCalories.text = caloriesTotal
+            }
+        })
+
+        //live data observable to fetch data for bar chart
+        viewModel.runsSortedByDate.observe(viewLifecycleOwner, Observer {
+            it?.let{
+                //x value for bar will be chronological order count, y value will be respective avg speed
+                val allAvgSpeeds = it.indices.map{i -> BarEntry(i.toFloat(), it[i].averageSpeedKMPH)}
+
+                //creating bar data set using bar entries
+                val barDataSet = BarDataSet(allAvgSpeeds, "Average Speed Over Time").apply {
+                    valueTextColor = Color.WHITE
+                    color = ContextCompat.getColor(requireContext(), R.color.colorAccent)
+                }
+
+                barChart.data = BarData(barDataSet)
+
+                //creating marker view to pop up custom view when bar is clicked
+                barChart.invalidate()
             }
         })
 
