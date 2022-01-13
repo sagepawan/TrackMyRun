@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
@@ -28,49 +30,21 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         //need to be defined else menu inflater override won't be called in child fragments
-        setSupportActionBar(binding.toolbar)
+        //setSupportActionBar(binding.toolbar)
 
         navigateToTrackingFragmentWhenRequired(intent)
 
-       // val navController = findNavController(R.id.navHostFragment)
+        val navView = binding.bottomNavigationView
+        val navController = findNavController(R.id.navHostFragment)
 
-       // binding.bottomNavigationView.setupWithNavController(navController)
-
-        /*navController.addOnDestinationChangedListener { _, destination, _ ->
-            when(destination.id) {
-                R.id.settingsFragment, R.id.runFragment, R.id.statsFragment ->
-                    binding.bottomNavigationView.visibility = View.VISIBLE
-                else -> binding.bottomNavigationView.visibility = View.GONE
-            }
-        }*/
-
-        val navView: BottomNavigationView = binding.bottomNavigationView
-
-        navController = findNavController(R.id.navHostFragment)
-
-        navView.setupWithNavController(navController)
-
-
-
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.runFragment, R.id.statsFragment, R.id.settingsFragment
+                R.id.navigation_run, R.id.navigation_stats, R.id.navigation_settings
             )
         )
 
-        /*navController.addOnDestinationChangedListener{ _, destination, _ ->
-            when(destination.id){
-                R.id.runFragment, R.id.statsFragment, R.id.settingsFragment -> navView.visibility = View.VISIBLE
-                else -> navView.visibility = View.GONE
-            }
-
-            Log.d(R.id.runFragment.toString()+" - ", destination.id.toString())
-        }*/
-
         //setupActionBarWithNavController(navController, appBarConfiguration)
-        //navView.setupWithNavController(navController)
+        navView.setupWithNavController(navController)
 
     }
 

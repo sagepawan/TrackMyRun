@@ -24,10 +24,9 @@
                 android:id="@+id/tvToolbarTitle"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Track My Run"
-                android:textSize="20sp"
+                android:text="Running App"
+                android:textSize="30sp"
                 android:textStyle="bold"
-                android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
                 android:textColor="@android:color/white"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -54,7 +53,7 @@
             android:layout_height="match_parent"
             android:name="androidx.navigation.fragment.NavHostFragment"
             app:defaultNavHost="true"
-            app:navGraph="@navigation/nav_graph"/>
+            app:navGraph="@navigation/navigation_graph" />
 
     </FrameLayout>
 
