@@ -13,33 +13,38 @@
     <fragment
         android:id="@+id/navigation_run"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.RunFragment"
-        android:label="RunFragment" >
+        android:label="@string/title_run" >
         <action
             android:id="@+id/action_runFragment_to_trackingFragment"
             app:destination="@id/navigation_tracking" />
     </fragment>
+
     <fragment
         android:id="@+id/navigation_setup"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.SetupFragment"
-        android:label="SetupFragment" >
+        android:label="@string/title_setup" >
         <action
             android:id="@+id/action_setupFragment_to_runFragment"
             app:destination="@id/navigation_run" />
     </fragment>
+
     <fragment
         android:id="@+id/navigation_stats"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.StatsFragment"
-        android:label="StatsFragment" />
+        android:label="@string/title_stat" />
+
     <fragment
         android:id="@+id/navigation_settings"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.SettingsFragment"
-        android:label="SettingsFragment" />
+        android:label="@string/title_setting" />
+
     <fragment
         android:id="@+id/navigation_tracking"
         android:name="com.pawan.sage.trackmyrun.ui.fragments.TrackingFragment"
-        android:label="TrackingFragment" >
+        android:label="@string/title_tracking" >
         <action
             android:id="@+id/action_trackingFragment_to_runFragment"
             app:destination="@id/navigation_run" />
     </fragment>
+
 </navigation>

@@ -2,18 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/runFragment"
+        android:id="@+id/navigation_run"
         android:icon="@drawable/ic_run"
         android:title="@string/title_run" />
 
     <item
-        android:id="@+id/statsFragment"
+        android:id="@+id/navigation_stats"
         android:icon="@drawable/ic_graph"
         android:title="@string/title_stat" />
 
     <item
-        android:id="@+id/settingsFragment"
+        android:id="@+id/navigation_settings"
         android:icon="@drawable/ic_settings"
         android:title="@string/title_setting" />
-
 </menu>

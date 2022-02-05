@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         //need to be defined else menu inflater override won't be called in child fragments
-        //setSupportActionBar(binding.toolbar)
+        setSupportActionBar(binding.toolbar)
 
         navigateToTrackingFragmentWhenRequired(intent)
 
@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
-        //setupActionBarWithNavController(navController, appBarConfiguration)
+        setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
     }
